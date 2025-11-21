@@ -20,18 +20,13 @@ async function fetchStatus(showAlert = false) {
         const serverDateHeader = res.headers.get('Date');
         const serverNow = serverDateHeader ? new Date(serverDateHeader) : null;
 
-        // Show total time if Status button clicked
+        // Status butonu: sadece o anki durumu/elapsed'i göster
         if (showAlert) {
             if (data.isRunning) {
-                showModal('Timer is running!');
+                const elapsedText = document.getElementById('elapsed').textContent;
+                showModal(`Timer is running!\nElapsed: ${elapsedText}`);
             } else {
-                const totalRes = await fetch(`${BASE_URL}/total`);
-                const totalData = await totalRes.json();
-                showModal(
-                    totalData.totalMinutes > 0
-                        ? `Total work time: ${totalData.totalMinutes} minutes`
-                        : 'No sessions yet.'
-                );
+                showModal('Timer is stopped.');
             }
         }
 
@@ -110,6 +105,44 @@ async function stopTimer() {
 
         showModal(`Completed!\n${data.durationMinutes} minutes\n${data.comment}`);
         await fetchStatus();
+    } catch (e) {
+        document.getElementById('error').textContent = 'Error: ' + e.message;
+    }
+}
+
+// GET /total explicit button handler
+async function showTotal() {
+    try {
+        const res = await fetch(`${BASE_URL}/total`);
+        if (!res.ok) throw new Error('Total request failed');
+        const data = await res.json();
+        showModal(
+            data.totalMinutes > 0
+                ? `Total work time: ${data.totalMinutes} minutes`
+                : 'No sessions yet.'
+        );
+    } catch (e) {
+        document.getElementById('error').textContent = 'Error: ' + e.message;
+    }
+}
+
+// GET /history button handler
+async function showHistory() {
+    try {
+        const res = await fetch(`${BASE_URL}/history`);
+        if (!res.ok) throw new Error('History request failed');
+        const sessions = await res.json();
+
+        if (!Array.isArray(sessions) || sessions.length === 0) {
+            showModal('No sessions yet.');
+            return;
+        }
+
+        const list = sessions
+            .map((m, idx) => `#${idx + 1}: ${m} minutes`)
+            .join('\n');
+
+        showModal(`History:\n${list}`);
     } catch (e) {
         document.getElementById('error').textContent = 'Error: ' + e.message;
     }
