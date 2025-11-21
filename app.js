@@ -126,23 +126,14 @@ async function showTotal() {
     }
 }
 
-// GET /history button handler
-async function showHistory() {
+// POST /reset button handler
+async function resetTimer() {
     try {
-        const res = await fetch(`${BASE_URL}/history`);
-        if (!res.ok) throw new Error('History request failed');
-        const sessions = await res.json();
-
-        if (!Array.isArray(sessions) || sessions.length === 0) {
-            showModal('No sessions yet.');
-            return;
-        }
-
-        const list = sessions
-            .map((m, idx) => `#${idx + 1}: ${m} minutes`)
-            .join('\n');
-
-        showModal(`History:\n${list}`);
+        const res = await fetch(`${BASE_URL}/reset`, { method: 'POST' });
+        if (!res.ok) throw new Error('Reset failed');
+        const data = await res.json();
+        showModal(data.message || 'Timer and total time reset.');
+        await fetchStatus();
     } catch (e) {
         document.getElementById('error').textContent = 'Error: ' + e.message;
     }
