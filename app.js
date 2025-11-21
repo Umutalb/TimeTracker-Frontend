@@ -41,9 +41,14 @@ async function fetchStatus(showAlert = false) {
         document.getElementById('startBtn').disabled = data.isRunning;
         document.getElementById('stopBtn').disabled = !data.isRunning;
         
-        // Sayaç başlat veya durdur
+        
         if (data.isRunning && data.startedAt) {
-            startElapsedTimer(new Date(data.startedAt));
+            const startTime = new Date(data.startedAt);
+            if (!isNaN(startTime.getTime())) {
+                startElapsedTimer(startTime);
+            } else {
+                stopElapsedTimer();
+            }
         } else {
             stopElapsedTimer();
         }
@@ -55,7 +60,7 @@ async function fetchStatus(showAlert = false) {
 }
 
 function startElapsedTimer(startTime) {
-    stopElapsedTimer(); // Önceki timer'ı temizle
+    stopElapsedTimer(); 
     
     const updateElapsed = () => {
         const now = new Date();
@@ -71,8 +76,8 @@ function startElapsedTimer(startTime) {
         document.getElementById('elapsed').textContent = formatted;
     };
     
-    updateElapsed(); // Hemen güncelle
-    timerInterval = setInterval(updateElapsed, 1000); // Her saniye güncelle
+    updateElapsed(); 
+    timerInterval = setInterval(updateElapsed, 1000); 
 }
 
 function stopElapsedTimer() {
